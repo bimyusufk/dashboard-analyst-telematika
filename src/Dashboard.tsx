@@ -16,11 +16,10 @@ const CSV_DATA_URL = "/data_survey.csv";
 // --- TYPES ---
 interface DataItem {
   id: number;
-  intensity: number;
-  dependency: number;
-  competence: number;
-  alienation: number;
-  boldness: number;
+  intensity: number;    // Intensitas & Kebiasaan Digital
+  dependency: number;   // Ketergantungan Psikologis
+  competence: number;   // Kemampuan & Kenyamanan Tatap Muka
+  alienation: number;   // Alienasi & Kecanggungan Sosial
   usageGroup: string;
 }
 
@@ -64,10 +63,10 @@ const spearmanCorrelation = (x: number[], y: number[]): number => {
   return rho;
 };
 
-// Calculate all correlations between variables
+// Calculate all correlations between the 4 main variables
 const calculateCorrelationMatrix = (data: DataItem[]): CorrelationItem[] => {
-  const variables = ['intensity', 'dependency', 'competence', 'alienation', 'boldness'] as const;
-  const labels = ['Intensitas', 'Ketergantungan', 'Kompetensi F2F', 'Alienasi', 'Keberanian Online'];
+  const variables = ['intensity', 'dependency', 'competence', 'alienation'] as const;
+  const labels = ['Intensitas Digital', 'Ketergantungan Psikologis', 'Kompetensi Tatap Muka', 'Alienasi Sosial'];
   
   const matrix: CorrelationItem[] = [];
   
@@ -125,7 +124,7 @@ const SectionHeader = ({ title, description }: { title: string; description: str
 // Correlation Matrix Heatmap Component
 const CorrelationMatrix = ({ data }: { data: DataItem[] }) => {
   const correlations = calculateCorrelationMatrix(data);
-  const variables = ['Intensitas', 'Ketergantungan', 'Kompetensi F2F', 'Alienasi', 'Keberanian Online'];
+  const variables = ['Intensitas Digital', 'Ketergantungan Psikologis', 'Kompetensi Tatap Muka', 'Alienasi Sosial'];
   
   // Get correlation between two labels
   const getCorrelation = (label1: string, label2: string): { correlation: number; significant: boolean } => {
@@ -271,11 +270,22 @@ export default function ResearchDashboard() {
       
       const getVal = (idx: number) => parseInt(values[idx]) || 0;
 
+      // 1. Intensitas & Kebiasaan Digital (5 items): cols 2, 4, 5, 18, 19
+      // - Smartphone >6 jam, media sosial harian, pesan cepat, akses mudah, wajib untuk akademik
       const intensityScore = (getVal(2) + getVal(4) + getVal(5) + getVal(18) + getVal(19)) / 5;
+      
+      // 2. Ketergantungan Psikologis (5 items): cols 3, 6, 20, 21, 22
+      // - Cek notifikasi, cemas tanpa HP, hiburan/pelarian, FOMO, kebiasaan sulit dihentikan
       const dependencyScore = (getVal(3) + getVal(6) + getVal(20) + getVal(21) + getVal(22)) / 5;
+      
+      // 3. Kompetensi Tatap Muka (4 items): cols 7, 8, 9, 10
+      // - Nyaman presentasi, kontak mata, bahasa tubuh, prefer diskusi langsung
       const competenceScore = (getVal(7) + getVal(8) + getVal(9) + getVal(10)) / 4;
+      
+      // 4. Alienasi Sosial (5 items): cols 13, 14, 15, 16, 17
+      // - Hindari percakapan mendalam, interaksi dangkal, lebih terhubung online, canggung, kesulitan empati
       const alienationScore = (getVal(13) + getVal(14) + getVal(15) + getVal(16) + getVal(17)) / 5;
-      const boldnessScore = getVal(11);
+      
       const usageGroup = getVal(2) >= 4 ? 'Heavy User (>6 Jam)' : 'Moderate/Light';
 
       return {
@@ -284,7 +294,6 @@ export default function ResearchDashboard() {
         dependency: parseFloat(dependencyScore.toFixed(2)),
         competence: parseFloat(competenceScore.toFixed(2)),
         alienation: parseFloat(alienationScore.toFixed(2)),
-        boldness: boldnessScore,
         usageGroup: usageGroup
       };
     });
@@ -583,15 +592,15 @@ export default function ResearchDashboard() {
         {activeTab === 'behavior' && (
           <div className="space-y-6 animate-in fade-in duration-500">
              <SectionHeader 
-              title="Fenomena Perilaku Digital" 
-              description="Analisis mendalam mengenai Online Disinhibition Effect."
+              title="Analisis Perilaku Digital" 
+              description="Perbandingan profil individu berdasarkan 4 variabel utama penelitian."
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Online Disinhibition Chart */}
+              {/* Individual Profile Chart */}
               <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                <h3 className="font-bold text-slate-800 mb-2">Online Disinhibition Effect</h3>
-                <p className="text-xs text-slate-500 mb-6">Sampel acak: Perbandingan keberanian online vs kepercayaan diri tatap muka.</p>
+                <h3 className="font-bold text-slate-800 mb-2">Profil Individu (Sampel)</h3>
+                <p className="text-xs text-slate-500 mb-6">Perbandingan skor 4 variabel pada 15 responden pertama.</p>
                 
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
@@ -601,13 +610,14 @@ export default function ResearchDashboard() {
                       <YAxis dataKey="id" type="category" scale="band" width={30} />
                       <Tooltip />
                       <Legend />
-                      <Bar dataKey="boldness" name="Keberanian Online" barSize={8} fill="#8b5cf6" radius={[0, 4, 4, 0]} />
-                      <Bar dataKey="competence" name="PD Tatap Muka" barSize={8} fill="#94a3b8" radius={[0, 4, 4, 0]} />
+                      <Bar dataKey="dependency" name="Ketergantungan" barSize={6} fill="#ef4444" radius={[0, 4, 4, 0]} />
+                      <Bar dataKey="alienation" name="Alienasi" barSize={6} fill="#f59e0b" radius={[0, 4, 4, 0]} />
+                      <Bar dataKey="competence" name="Kompetensi F2F" barSize={6} fill="#3b82f6" radius={[0, 4, 4, 0]} />
                     </ComposedChart>
                   </ResponsiveContainer>
                 </div>
                 <p className="text-xs text-slate-500 mt-2 italic">
-                  *Perbedaan batang ungu vs abu-abu menunjukkan kesenjangan keberanian digital vs fisik.
+                  *Responden dengan ketergantungan tinggi (merah) cenderung memiliki alienasi tinggi (kuning).
                 </p>
               </div>
 
@@ -616,26 +626,46 @@ export default function ResearchDashboard() {
                  <div className="bg-gradient-to-br from-slate-800 to-slate-900 text-white p-6 rounded-xl shadow-md">
                     <div className="flex items-center gap-2 mb-3">
                       <Brain className="text-blue-400" />
-                      <h3 className="font-bold text-lg">Kesimpulan Ilmiah</h3>
+                      <h3 className="font-bold text-lg">Kesimpulan Penelitian</h3>
                     </div>
                     <ul className="space-y-3 text-sm text-slate-300">
                       <li className="flex gap-2">
                         <ChevronRight size={16} className="mt-1 text-emerald-400 shrink-0" />
-                        <span><strong>Signifikan:</strong> Ketergantungan → Alienasi (semakin tinggi FOMO, semakin terasing)</span>
+                        <span><strong>Ketergantungan → Alienasi:</strong> Semakin tinggi FOMO & kecemasan digital, semakin tinggi perasaan terasing.</span>
                       </li>
                       <li className="flex gap-2">
                         <ChevronRight size={16} className="mt-1 text-emerald-400 shrink-0" />
-                        <span><strong>Signifikan:</strong> Intensitas → Kompetensi (heavy users tetap kompeten F2F)</span>
+                        <span><strong>Paradoks Digital:</strong> Intensitas penggunaan tinggi tidak menurunkan kompetensi tatap muka.</span>
                       </li>
                       <li className="flex gap-2">
                         <ChevronRight size={16} className="mt-1 text-amber-400 shrink-0" />
-                        <span><strong>Tidak Signifikan:</strong> Beberapa pasangan variabel menunjukkan hubungan lemah</span>
+                        <span><strong>Implikasi:</strong> Masalah bukan pada durasi penggunaan, tapi pada ketergantungan psikologis.</span>
                       </li>
                       <li className="flex gap-2">
                         <ChevronRight size={16} className="mt-1 text-blue-400 shrink-0" />
-                        <span>Fokus intervensi: aspek <strong>emosional (FOMO)</strong>, bukan durasi penggunaan.</span>
+                        <span><strong>Rekomendasi:</strong> Intervensi harus fokus pada aspek emosional (FOMO, kecemasan) bukan pembatasan waktu.</span>
                       </li>
                     </ul>
+                 </div>
+
+                 {/* Variable Info Cards */}
+                 <div className="grid grid-cols-2 gap-3">
+                   <div className="bg-red-50 p-4 rounded-lg border border-red-100">
+                     <p className="font-bold text-red-700 text-sm">Ketergantungan</p>
+                     <p className="text-xs text-red-600 mt-1">5 item: Notifikasi, Cemas, Hiburan, FOMO, Kebiasaan</p>
+                   </div>
+                   <div className="bg-amber-50 p-4 rounded-lg border border-amber-100">
+                     <p className="font-bold text-amber-700 text-sm">Alienasi Sosial</p>
+                     <p className="text-xs text-amber-600 mt-1">5 item: Hindari F2F, Dangkal, Online &gt; Offline, Canggung, Empati</p>
+                   </div>
+                   <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                     <p className="font-bold text-blue-700 text-sm">Kompetensi F2F</p>
+                     <p className="text-xs text-blue-600 mt-1">4 item: Presentasi, Kontak mata, Bahasa tubuh, Prefer langsung</p>
+                   </div>
+                   <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                     <p className="font-bold text-purple-700 text-sm">Intensitas Digital</p>
+                     <p className="text-xs text-purple-600 mt-1">5 item: Durasi, Medsos, Pesan, Akses, Akademik</p>
+                   </div>
                  </div>
               </div>
             </div>

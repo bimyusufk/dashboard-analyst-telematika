@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import { 
   Activity, Users, AlertTriangle, Brain, 
-  ChevronRight, BarChart2, Network, Grid3X3
+  ChevronRight, BarChart2, Network, LayoutGrid
 } from 'lucide-react';
 
 // =================================================================================
@@ -150,7 +150,7 @@ const CorrelationMatrix = ({ data }: { data: DataItem[] }) => {
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
       <div className="flex items-center gap-2 mb-4">
-        <Grid3X3 className="text-blue-600" size={20} />
+        <LayoutGrid className="text-blue-600" size={20} />
         <h3 className="font-bold text-slate-800">Matriks Korelasi Spearman</h3>
       </div>
       
